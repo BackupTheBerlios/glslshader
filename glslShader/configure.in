@@ -1,0 +1,46 @@
+AC_INIT([glslShader], [0.0.1])
+
+
+# Define config files and lib name
+AM_INIT_AUTOMAKE([glslShader], [0.0.1])
+AM_CONFIG_HEADER([config.h])
+
+NAME=glslShader
+VERSION=0.0.1
+AC_SUBST(NAME)
+AC_SUBST(VERSION)
+
+
+dnl Check for programs
+AM_PROG_LIBTOOL
+AC_LANG_C
+AC_PROG_CC
+AC_PROG_MAKE_SET
+AC_PROG_INSTALL
+
+AC_HEADER_STDC
+
+dnl versioning info for libtool
+dnl Note this is the ABI version which is not the same as our actual library version
+MAIN_CURRENT=1
+MAIN_REVISION=3
+MAIN_AGE=0
+MAIN_VERSION_INFO=$MAIN_CURRENT:$MAIN_REVISION:$MAIN_AGE
+AC_SUBST(MAIN_VERSION_INFO)
+
+CFLAGS=
+AC_SUBST(CFLAGS)
+
+CHECK_PIC
+SETUP_FOR_TARGET
+
+AX_CHECK_GL
+
+# Compiling flags
+CFLAGS="$CFLAGS $GL_CFLAGS"
+LIBS="$LIBS $GL_LIBS"
+
+
+AC_OUTPUT([Makefile\
+		glslShader.pc])
+		

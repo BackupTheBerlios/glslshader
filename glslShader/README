@@ -1,0 +1,12 @@
+
+glslShader
+---------
+
+Provides a wrapper for GLSL (OpenGL's shading language) to simplify using of
+shader programs in your applications. Syntax is similar to Nvidia's Cg, so
+it will be no problem to work with GLSL instead.
+
+
+see glslShader.h for the functions available from the library.
+
+-- Art Tevs <tevs@mpi-sb.mpg.de>

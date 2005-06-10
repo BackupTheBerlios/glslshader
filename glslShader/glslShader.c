@@ -15,7 +15,21 @@
  *                                                                         *
  **************************************************************************/
 
+// Shader header
 #include "glslShader.h"
+
+// OpenGL's includes
+#ifndef GL_GLEXT_PROTOTYPES
+#define GL_GLEXT_PROTOTYPES
+#include <GL/glext.h>
+#endif
+
+// Standard library includes
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <string.h>
+
 
 #if 0
 #include <GL/glut.h>
@@ -45,7 +59,7 @@ int main(int argc, char* argv[]){
 	
 	GLSLprogram shader;
 
-	glslSetErrorCallback(error_callback, NULL);
+	glslSetErrorCallback(error_callback, 0);
 	
 	shader = glslCreateProgram();
 // 	glslAttachShader(shader, "shader/fDebugCSGWriter.glsl.cg", GL_FRAGMENT_SHADER_ARB);
@@ -64,9 +78,9 @@ int main(int argc, char* argv[]){
 // Internal used functions
 void glslEmptyLastError();
 void glslFillLastError(const char* fmt, ...);
-void glslCheckError(GLSLprogram obj, bool internal = false);
+void glslCheckError(GLSLprogram obj, GLSLbool internal);
 void glslGetParam(GLSLprogram obj, const char* name, GLSL_Param* param);
-char* glslScanAttributes(GLSLprogram obj, char* prog, GLSL_Attr** attr, int* count);
+char* glslScanAttributes(GLSLprogram obj, char* prog, GLSL_Attr** attr, GLSLint32* count);
 
 
 /**
@@ -77,26 +91,27 @@ char	___glsl_last_error_string[4096];
 /**
  * Store 1 if there is an error stored in variable or 0 otherwise
  **/
-int		___glsl_has_last_error = 0;
+GLSLbool		___glsl_has_last_error = GLSL_FALSE;
 
 /**
  * Store here the pointer to specified callback function.
  **/
-GLSLerrorCallback ___glsl_error_callback = NULL;
+GLSLerrorCallback ___glsl_error_callback = 0;
 
 
 /**
  * Store here the specified callback parameter which will be given
  * to the callback fucntion.
  **/
-void*			  ___glsl_error_callback_param = NULL;
+void*			  ___glsl_error_callback_param = 0;
 
 
 /**
  * This variables do pushing and poping of glsl programs on the stack
  **/
 GLhandleARB	_glsl_Program_Stack[GLSL_STACK_SIZE];
-int  				_glsl_Program_StackPos = 0;
+GLSLint16	_glsl_Program_StackPos = 0;
+
 
 //--------------------------------------------------------------------------------
 void glslPush(){
@@ -106,8 +121,6 @@ void glslPush(){
 	_glsl_Program_Stack[_glsl_Program_StackPos] = glGetHandleARB(GL_PROGRAM_OBJECT_ARB);
 	_glsl_Program_StackPos++;
 }
-
-
 //--------------------------------------------------------------------------------
 void glslPop(){
 	if (_glsl_Program_StackPos < 1){
@@ -116,8 +129,6 @@ void glslPop(){
 	_glsl_Program_StackPos--;
 	glUseProgramObjectARB(_glsl_Program_Stack[_glsl_Program_StackPos]);
 }
-
-				 
 //--------------------------------------------------------------------------------
 const char*	glslGetLastErrorString(){
 	return ___glsl_last_error_string;
@@ -135,19 +146,19 @@ const char*	glslGetLastErrorString(){
  **/
 void glslGetParam(GLSLprogram obj, const char* name, GLSL_Param* param){
 
-	if (obj == NULL) return;
+	if (obj == 0) return;
 
 	// is program valid
-	if (obj->program == 0 || obj->is_valid == false){
+	if (obj->program == 0 || obj->is_valid == 0){
 		glslFillLastError(GLSL_ERR_NOT_VALID_PROGRAM);
-		glslCheckError(obj, true);
+		glslCheckError(obj, 1);
 		return;		
 	}
 
 	// has the program got any parameters
-	if (obj->params == NULL){
+	if (obj->params == 0){
 		glslFillLastError(GLSL_ERR_NO_PARAMETERS);
-		glslCheckError(obj, true);
+		glslCheckError(obj, 1);
 		return;		
 	}
 	
@@ -158,16 +169,16 @@ void glslGetParam(GLSLprogram obj, const char* name, GLSL_Param* param){
 //--------------------------------------------------------------------------------
 GLSLprogram glslCreateProgram(){
 
-	GLSLprogram prog = NULL;
+	GLSLprogram prog = 0;
 
 	prog = (GLSLprogram)malloc(sizeof(GLSL_Shader));
-	if (prog == NULL) return NULL;
+	if (prog == 0) return 0;
 	
 	// it is not valid at now
-	prog->is_valid = false;
+	prog->is_valid = 0;
 
 	// setup all parameters
-	prog->params = NULL;
+	prog->params = 0;
 	prog->param_count = 0;
 	
 	// Create program through OpenGL's context
@@ -175,7 +186,7 @@ GLSLprogram glslCreateProgram(){
 
 	if (prog->program == 0){
 		glslFillLastError(GLSL_ERR_CAN_NOT_CREATE);
-		glslCheckError(prog, true);
+		glslCheckError(prog, 1);
 	}else{
 		glslEmptyLastError();
 	}
@@ -184,26 +195,70 @@ GLSLprogram glslCreateProgram(){
 	
 }
 
-
 //--------------------------------------------------------------------------------
-void glslAttachShader(GLSLprogram obj, const char* filename, GLenum shaderType){
-
-	if (obj == NULL) return;
-
-	char*	data = NULL;
-	int 	size = 0;
-	FILE* 	file = NULL;
-
+void glslAttachShaderFromMemory(GLSLprogram obj, const char* prog, size_t size, GLSL_ShaderType shaderType)
+{
+	if (obj == 0) return;
+	
 	// check for right shader type
 	if (shaderType != GL_VERTEX_SHADER_ARB && shaderType != GL_FRAGMENT_SHADER_ARB){
 		glslFillLastError(GLSL_ERR_WRONG_SHADER_TYPE);
-		glslCheckError(obj, true);
+		glslCheckError(obj, 1);
 		return;		
 	}
 
 	if (obj->program == 0){
 		glslFillLastError(GLSL_ERR_NOT_VALID_PROGRAM);
-		glslCheckError(obj, true);
+		glslCheckError(obj, 1);
+		return;		
+	}
+
+#if 0
+	// read all attributes from the program
+	GLSL_Attr* attr = 0;
+	int count = 0;
+	char* ndata = glslScanAttributes(obj, prog, &attr, &count);
+#endif
+	
+	// compile the source
+	GLint length = size;
+	GLhandleARB shader = glCreateShaderObjectARB(shaderType);
+	glShaderSourceARB(shader, 1, (const GLcharARB**)&prog, &size);
+	glCompileShaderARB(shader);
+	glAttachObjectARB(obj->program, shader);
+	glDeleteObjectARB(shader);
+
+#if 0
+	// Now combine all used attributes and copy them to program object
+	for (int i=0; i < count; i++){
+		glBindAttribLocationARB(obj->program, attr[i].index, attr[i].name);
+	}
+	free(ndata);
+#endif
+		
+	glslCheckError(obj, 0);
+
+}
+
+//--------------------------------------------------------------------------------
+void glslAttachShader(GLSLprogram obj, const char* filename, GLSL_ShaderType shaderType){
+
+	if (obj == 0) return;
+
+	char*	data = 0;
+	size_t 	size = 0;
+	FILE* 	file = 0;
+
+	// check for right shader type
+	if (shaderType != GL_VERTEX_SHADER_ARB && shaderType != GL_FRAGMENT_SHADER_ARB){
+		glslFillLastError(GLSL_ERR_WRONG_SHADER_TYPE);
+		glslCheckError(obj, 1);
+		return;		
+	}
+
+	if (obj->program == 0){
+		glslFillLastError(GLSL_ERR_NOT_VALID_PROGRAM);
+		glslCheckError(obj, 1);
 		return;		
 	}
 
@@ -212,7 +267,7 @@ void glslAttachShader(GLSLprogram obj, const char* filename, GLenum shaderType){
 	file = fopen(filename,"rb");
 	if(!file) {
 		glslFillLastError(GLSL_ERR_CANNOT_OPEN_FILE, filename);
-		glslCheckError(obj, true);
+		glslCheckError(obj, 1);
 		return;
 	}
 
@@ -225,51 +280,43 @@ void glslAttachShader(GLSLprogram obj, const char* filename, GLenum shaderType){
 	fread(data,1,size,file);
 	fclose(file);
 
-#if 0
-	// read all attributes from the program
-	GLSL_Attr* attr = NULL;
-	int count = 0;
-	char* ndata = glslScanAttributes(obj, data, &attr, &count);
-#endif
-
-	// compile the source
-	GLint length = (GLint)strlen(data);
-	GLhandleARB shader = glCreateShaderObjectARB(shaderType);
-	glShaderSourceARB(shader, 1, (const GLcharARB**)&data, &length);
-	glCompileShaderARB(shader);
-	glAttachObjectARB(obj->program, shader);
-	glDeleteObjectARB(shader);
-
-#if 0
-	// Now combine all used attributes and copy them to program object
-	for (int i=0; i < count; i++){
-		glBindAttribLocationARB(obj->program, attr[i].index, attr[i].name);
-	}
-	free(ndata);
-#endif
+	// Attach the shader
+	glslAttachShaderFromMemory(obj, data, size, shaderType);
 	
 	// release used memory
 	free(data);
-	
-	glslCheckError(obj);
 
 }
 
 //--------------------------------------------------------------------------------
-void glslAttachVertexShader(GLSLprogram obj, const char* filename){
-	glslAttachShader(obj, filename, GL_VERTEX_SHADER_ARB);
+void glslAttachVertexShader(GLSLprogram obj, const char* filename)
+{
+	glslAttachShader(obj, filename, GLSL_VERTEX);
 }
 
 //--------------------------------------------------------------------------------
-void glslAttachFragmentShader(GLSLprogram obj, const char* filename){
-	glslAttachShader(obj, filename, GL_FRAGMENT_SHADER_ARB);
+void glslAttachFragmentShader(GLSLprogram obj, const char* filename)
+{
+	glslAttachShader(obj, filename, GLSL_FRAGMENT);
+}
+
+//--------------------------------------------------------------------------------
+void glslAttachVertexShaderFromMemory(GLSLprogram obj, const char* prog, size_t size)
+{
+	glslAttachShaderFromMemory(obj, prog, size, GLSL_VERTEX);
+}
+
+//--------------------------------------------------------------------------------
+void glslAttachFragmentShaderFromMemory(GLSLprogram obj, const char* prog, size_t size)
+{
+	glslAttachShaderFromMemory(obj, prog, size, GLSL_FRAGMENT);
 }
 
 
 //--------------------------------------------------------------------------------
-void glslBindAttribute(GLSLprogram obj, int attrIndex, char* name){
+void glslBindAttribute(GLSLprogram obj, GLSLint32 attrIndex, char* name){
 
-	if (obj == NULL)return;
+	if (obj == 0)return;
 	
 	glBindAttribLocationARB(obj->program, attrIndex, name);
 
@@ -304,18 +351,18 @@ void glslBindAttribute(GLSLprogram obj, int attrIndex, char* name){
  * the given string containing the program will not be deleted. You have also
  * to do it by yourself.
  **/
-char* glslScanAttributes(GLSLprogram obj, char* prog, GLSL_Attr** attr, int* count){
+char* glslScanAttributes(GLSLprogram obj, char* prog, GLSL_Attr** attr, GLSLint32* count){
 
-	if (attr == NULL || count == NULL){
+	if (attr == 0 || count == 0){
 		return prog;
 	}
 
 	// define the buffer which will hold our code to be returned
-	char* new_prog = NULL;
+	char* new_prog = 0;
 	new_prog = (char*)malloc(strlen(prog)*sizeof(char));
-	if (new_prog == NULL){
+	if (new_prog == 0){
 		glslFillLastError(GLSL_ERR_OUT_OF_MEMORY);
-		glslCheckError(obj, true);
+		glslCheckError(obj, 1);
 		return prog;
 	}
 	memset(new_prog, 0, sizeof(char)*strlen(prog));
@@ -332,7 +379,7 @@ char* glslScanAttributes(GLSLprogram obj, char* prog, GLSL_Attr** attr, int* cou
 		char* at = strstr(source, "attribute ");
 
 		// if nothing found, so break the loop
-		if (at == NULL){
+		if (at == 0){
 			static int i = 0;
 			i++;
 			fprintf(stderr, "%i - %i\n", i, source - prog);
@@ -424,9 +471,10 @@ char* glslScanAttributes(GLSLprogram obj, char* prog, GLSL_Attr** attr, int* cou
 	// now copy all found attributes
 	if (attrCount > 0){
 		*attr = (GLSL_Attr*)malloc(sizeof(GLSL_Attr) * attrCount);
-		if (*attr != NULL){
+		if (*attr != 0){
 			*count = attrCount;
-			for (int i=0; i < attrCount; i++){
+			int i = 0;
+			for (i=0; i < attrCount; i++){
 				((*attr)[i]).index = attrTemp[i].index;
 				strcpy(((*attr)[i]).name, attrTemp[i].name);
 			}
@@ -440,12 +488,12 @@ char* glslScanAttributes(GLSLprogram obj, char* prog, GLSL_Attr** attr, int* cou
 //--------------------------------------------------------------------------------
 void glslLinkProgram(GLSLprogram obj){
 
-	if (obj == NULL) return;
+	if (obj == 0) return;
 	
 	// check if program is valid
 	if (obj->program == 0){
 		glslFillLastError(GLSL_ERR_NOT_VALID_PROGRAM);
-		glslCheckError(obj, true);
+		glslCheckError(obj, 1);
 		return;		
 	}
 
@@ -454,11 +502,11 @@ void glslLinkProgram(GLSLprogram obj){
 	GLint linked;
 	glGetObjectParameterivARB(obj->program, GL_OBJECT_LINK_STATUS_ARB, &linked);
 	if(!linked) {
-		glslCheckError(obj);
+		glslCheckError(obj, 0);
 		return;
 	}
 
-	obj->is_valid = true;
+	obj->is_valid = 1;
 	glslEmptyLastError();
 
 
@@ -471,8 +519,9 @@ void glslLinkProgram(GLSLprogram obj){
 		obj->param_count = count;
 		obj->params = (GLSL_Param*)malloc(count* sizeof(GLSL_Param));
 		memset(obj->params, 0, count* sizeof(GLSL_Param));
-			
-		for (GLuint i=0; i < (GLuint)count; i++){
+		
+		GLuint i = 0;	
+		for (i=0; i < (GLuint)count; i++){
 			GLsizei length = 0;
 			GLint size = 0;
 			GLenum type;
@@ -499,10 +548,10 @@ void glslLinkProgram(GLSLprogram obj){
 
 //--------------------------------------------------------------------------------
 void glslDeleteProgram(GLSLprogram obj){
-	if (obj == NULL) return;
+	if (obj == 0) return;
 	if (obj->program) glDeleteObjectARB(obj->program);
 
-	if (obj->params != NULL)free(obj->params);
+	if (obj->params != 0)free(obj->params);
 	free(obj);
 }
 
@@ -540,15 +589,15 @@ void glslFillLastError(const char* fmt, ...){
  *
  * We distinguish between internal and external errors. Internal errors
  * are errors produced internal by this program (for example "Wrong parameter
- *  name" or something else). External errors are produced by GLSL
+ * name" or something else). External errors are produced by GLSL
  * and will be tested here.
  **/
-void glslCheckError(GLSLprogram obj, bool internal){
+void glslCheckError(GLSLprogram obj, GLSLbool internal){
 	
-	bool occurs = internal;
+	GLSLbool occurs = internal;
 	
-	if (!internal){
-		int length = 0;
+	if (internal == 0){
+		size_t length = 0;
 		static char error[4096];
 		glGetInfoLogARB(obj->program, 4096, &length, error);
 
@@ -558,8 +607,8 @@ void glslCheckError(GLSLprogram obj, bool internal){
 			strcpy(___glsl_last_error_string, error);
 			___glsl_has_last_error = 1;
 
-			if (strstr(error, "warning:") == NULL){
-				occurs = true;
+			if (strstr(error, "warning:") == 0){
+				occurs = 1;
 			}
 		}		
 	}
@@ -573,7 +622,7 @@ void glslCheckError(GLSLprogram obj, bool internal){
 
 
 //--------------------------------------------------------------------------------
-int	glslHasError(){
+GLSLbool glslHasError(){
 	return ___glsl_has_last_error;
 }
 
@@ -586,12 +635,12 @@ void glslSetErrorCallback(GLSLerrorCallback pCallback, void* callbackParam){
 
 
 //--------------------------------------------------------------------------------
-void glslSetParameterf(GLSLprogram obj, const char* name, int size, const float* value){
+void glslSetParameterf(GLSLprogram obj, const char* name, GLSLint8 size, const GLSLfloat32* value){
 
-	if (obj == NULL) return;
-	if (obj->is_valid == false){
+	if (obj == 0) return;
+	if (obj->is_valid == 0){
 		glslFillLastError(GLSL_ERR_NOT_LINKED);
-		glslCheckError(obj, true);
+		glslCheckError(obj, 1);
 		return;		
 	}
 	
@@ -603,22 +652,22 @@ void glslSetParameterf(GLSLprogram obj, const char* name, int size, const float*
 		else if(size == 2) glUniform2fvARB(param.location,1,value);
 		else if(size == 3) glUniform3fvARB(param.location,1,value);
 		else if(size == 4) glUniform4fvARB(param.location,1,value);
-		glslCheckError(obj);
+		glslCheckError(obj, 0);
 	}else{
 		glslFillLastError(GLSL_ERR_NO_PARAMETER, name);
-		glslCheckError(obj, true);
+		glslCheckError(obj, 1);
 	}
 	
 }
 
 
 //--------------------------------------------------------------------------------
-void glslSetParameteri(GLSLprogram obj, const char* name, int size, const int* value){
+void glslSetParameteri(GLSLprogram obj, const char* name, GLSLint8 size, const GLSLint32* value){
 
-	if (obj == NULL) return;
-	if (obj->is_valid == false){
+	if (obj == 0) return;
+	if (obj->is_valid == 0){
 		glslFillLastError(GLSL_ERR_NOT_LINKED);
-		glslCheckError(obj, true);
+		glslCheckError(obj, 1);
 		return;		
 	}
 	
@@ -630,22 +679,22 @@ void glslSetParameteri(GLSLprogram obj, const char* name, int size, const int* v
 		else if(size == 2) glUniform2ivARB(param.location,1,value);
 		else if(size == 3) glUniform3ivARB(param.location,1,value);
 		else if(size == 4) glUniform4ivARB(param.location,1,value);
-		glslCheckError(obj);
+		glslCheckError(obj, 0);
 	}else{
 		glslFillLastError(GLSL_ERR_NO_PARAMETER, name);
-		glslCheckError(obj, true);
+		glslCheckError(obj, 1);
 	}
 }
 
 
 
 //--------------------------------------------------------------------------------
-void glslSetMatrixParameter(GLSLprogram obj, const char* name, int size, const float* mat, bool trans){
+void glslSetMatrixParameter(GLSLprogram obj, const char* name, GLSLint8 size, const GLSLfloat32* mat, GLSLbool trans){
 	
-	if (obj == NULL) return;
-	if (obj->is_valid == false){
+	if (obj == 0) return;
+	if (obj->is_valid == 0){
 		glslFillLastError(GLSL_ERR_NOT_LINKED);
-		glslCheckError(obj, true);
+		glslCheckError(obj, 1);
 		return;		
 	}
 	
@@ -656,10 +705,10 @@ void glslSetMatrixParameter(GLSLprogram obj, const char* name, int size, const f
 		if(size == 4) glUniformMatrix2fvARB(param.location,1,trans,mat);
 		else if(size == 9) glUniformMatrix3fvARB(param.location,1,trans,mat);
 		else if(size == 16)glUniformMatrix4fvARB(param.location,1,trans,mat);
-		glslCheckError(obj);
+		glslCheckError(obj, 0);
 	}else{
 		glslFillLastError(GLSL_ERR_NO_PARAMETER, name);
-		glslCheckError(obj, true);
+		glslCheckError(obj, 1);
 	}
 
 }
@@ -667,12 +716,12 @@ void glslSetMatrixParameter(GLSLprogram obj, const char* name, int size, const f
 
 
 //--------------------------------------------------------------------------------
-void glslSetTexture(GLSLprogram obj, const char* name, GLuint texture_unit){
+void glslSetTexture(GLSLprogram obj, const char* name, GLSLuint32 texture_unit){
 
-	if (obj == NULL) return;
-	if (obj->is_valid == false || obj->program == 0){
+	if (obj == 0) return;
+	if (obj->is_valid == 0 || obj->program == 0){
 		glslFillLastError(GLSL_ERR_NOT_LINKED);
-		glslCheckError(obj, true);
+		glslCheckError(obj, 1);
 		return;		
 	}
 	
@@ -680,11 +729,11 @@ void glslSetTexture(GLSLprogram obj, const char* name, GLuint texture_unit){
 	glslGetParam(obj, name, &param);
 
 	if (param.location != -1){
-		glUniform1iARB(param.location, texture_unit);
-		glslCheckError(obj);
+		glUniform1iARB(param.location, (GLuint)texture_unit);
+		glslCheckError(obj, 0);
 	}else{
 		glslFillLastError(GLSL_ERR_NO_PARAMETER, name);
-		glslCheckError(obj, true);
+		glslCheckError(obj, 1);
 	}
 }
 
@@ -692,14 +741,14 @@ void glslSetTexture(GLSLprogram obj, const char* name, GLuint texture_unit){
 
 //--------------------------------------------------------------------------------
 void glslEnableProgram(GLSLprogram obj){
-	if (obj == NULL) return;
+	if (obj == 0) return;
 	if (obj->program && obj->is_valid) glUseProgramObjectARB(obj->program);
 }
 
 
 //--------------------------------------------------------------------------------
 void glslDisableProgram(GLSLprogram obj){
-	if (obj == NULL) return;
+	if (obj == 0) return;
 	if (obj->program && obj->is_valid) glUseProgramObjectARB(0);
 }
 
@@ -710,7 +759,7 @@ void glslDisable(){
 
 //--------------------------------------------------------------------------------
 int glslGetUniformParameterCount(GLSLprogram obj){
-	if (obj == NULL) return 0;
+	if (obj == 0) return 0;
 	return obj->param_count;
 }
 

@@ -18,112 +18,14 @@
 #ifndef _GLSL_SHADER_H_
 #define _GLSL_SHADER_H_
 
-#ifndef GL_GLEXT_PROTOTYPES
-#define GL_GLEXT_PROTOTYPES
-extern "C"
-{
-#include "GL/gl.h"
-#include "GL/glext.h"
-#include "GL/glx.h"
-}
-#endif
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
 
-//! Size of the longest parameter name that can appears
-#define GLSL_LONGEST_NAME 256
+// Platform configuration script
+#include "glslTypes.h"
 
-//! How much program should glslPush(), glslPop() support
-#define GLSL_STACK_SIZE 64
-
-
-
-#define GLSL_ERR_NOT_VALID_PROGRAM 	"Not a valid program object!\n"
-#define GLSL_ERR_NO_PARAMETERS 		"The program has no parameters or they are not in use!\n"
-#define GLSL_ERR_CAN_NOT_CREATE		"Cannot create program object !!!\n Check if OpenGL subsystem is online.\n"
-#define GLSL_ERR_WRONG_SHADER_TYPE	"Wrong shader type !\n"
-#define GLSL_ERR_CANNOT_OPEN_FILE	"Can not open the shader file \"%s\" \n"
-#define GLSL_ERR_NOT_LINKED		"Program object was not linked before!\n"
-#define GLSL_ERR_NO_PARAMETER		"The parameter %s not exists or is not used\n"
-#define GLSL_ERR_OUT_OF_MEMORY		"Out of Memory Error !!!\n"
-#define GLSL_ERR_ONLY_BEFORE_LINK	"This can be used only before program was linked!\n"
-
-
-// Forward declarations
-struct GLSL_Shader;
-struct GLSL_Param;
-
- 
-//!This one represents our GLSL Program for using
-typedef GLSL_Shader* 				GLSLprogram;
-
-//! Error callback function
-typedef void(*GLSLerrorCallback)(GLSLprogram, void*);
-
-
-
-//! This structure stores information about parameters in glsl-Program
-struct GLSL_Param {
-        //! OpenGL's location for this parameter
-	GLint location;
-	
-	//! Type of the parameter (int, vec3, mat4, ...)
-	GLenum type;
-	
-	//! Length of the parameter in units. For example vec3 has the length 3.
-	int length;
-	
-	//! Name of the parameter
-	char name[GLSL_LONGEST_NAME];
-};
-
-
-
-//! Here we store information about attributes used in programs
-struct GLSL_Attr{
-        //! Index used to access to the vertex attribute
-	int index;
-	
-	//! Variable name of this attribute used in the program
-	char name[GLSL_LONGEST_NAME];
-};
-
-
-/**
- * This represents one shader object. Each shader object is either fragment
- * or vertex program.
- **/
-struct GLSL_Shader {
-
-	//! OpenGL's program handler
-	GLhandleARB program;
-
-	//! Here we store parameters for the program
-	GLSL_Param* params;
-	
-	//! Number of parameters in use
-	int param_count;
-
-	//! Here we store attributes used in the program
-	GLSL_Attr*  attrs;
-	
-	//! Number of vertex attributes in use
-	int attr_count;
-	
-	//! Is program linked or not
-	bool is_valid;
-	
-};
-
-
-
-//-----------------------------------------------------------------------------------
-// General programming functions
-//-----------------------------------------------------------------------------------
 
 /**
  * This function is acting like glPushMatrix function. It will push your current
@@ -145,21 +47,23 @@ struct GLSL_Shader {
  * enable or disable any program without using of glslEnable(), glslDisable()
  * the behavior of the stack operations is not defined
  **/
-void glslPush();
+GLSLAPI void GLSLAPIENTRY glslPush();
+
 
 /**
  * Get the last program from the stack and use it.
  * @see glslPush();
  **/
-void glslPop();
+GLSLAPI void GLSLAPIENTRY glslPop();
 
 
 /**
  * Here we create the program object so it can be filled out
  * with shader programs (more than one is allowed for each kind of shaders).
  * After that you have to compile it, to allow using of it.
+ * @return GLSL program object that will be used later to access to the program
  **/
-GLSLprogram glslCreateProgram();
+GLSLAPI GLSLprogram GLSLAPIENTRY glslCreateProgram();
 
 
 
@@ -173,22 +77,48 @@ GLSLprogram glslCreateProgram();
  * @param obj Shader program created before
  * @param filename File name of the shader program
  * @param shaderType Type of the shader program. It can be either:
- *		- GL_VERTEX_SHADER_ARB if file contains vertex program
- *		- GL_FRAGMENT_SHADER_ARB if file contains fragment program
+ *		- GLSL_VERTEX if file contains vertex program
+ *		- GLSL_FRAGMENT if file contains fragment program
  **/
-void 		glslAttachShader(GLSLprogram obj, const char* filename, GLenum shaderType);
+GLSLAPI void GLSLAPIENTRY	glslAttachShader(GLSLprogram obj, const char* filename, GLSL_ShaderType shaderType);
+
 
 /**
  * Same as glslAttachShader, but attaches a vertex shader program
  * @see glslAttachShader()
  **/
-void 		glslAttachVertexShader(GLSLprogram obj, const char* filename);
+GLSLAPI void GLSLAPIENTRY	glslAttachVertexShader(GLSLprogram obj, const char* filename);
 
 /**
  * Attach a fragment shader program.
  * @see glslAttachShader()
  **/
-void 		glslAttachFragmentShader(GLSLprogram obj, const char* filename);
+GLSLAPI void GLSLAPIENTRY	glslAttachFragmentShader(GLSLprogram obj, const char* filename);
+
+/**
+ * Same as glslAttachShader, but here you attach shaders from a character array
+ * containing the program. This allows you to use your own file loading routine
+ * for loading the programs.
+ * @param obj Program object created before
+ * @param prog String containing the program
+ * @param size Size of the given string
+ * @param shaderType Type of the shader you want to attach
+ * @see glslAttachShader()
+ **/
+GLSLAPI void GLSLAPIENTRY	glslAttachShaderFromMemory(GLSLprogram obj, const char* prog, size_t size, GLSL_ShaderType shaderType);
+
+
+/**
+ * Same as glslAttachShaderFromMemory, but attaches a vertex shader program
+ * @see glslAttachShaderFromMemory()
+ **/
+GLSLAPI void GLSLAPIENTRY	glslAttachVertexShaderFromMemory(GLSLprogram obj, const char* prog, size_t size);
+
+/**
+ * Attach a fragment shader program.
+ * @see glslAttachShader()
+ **/
+GLSLAPI void GLSLAPIENTRY	glslAttachFragmentShaderFromMemory(GLSLprogram obj, const char* prog, size_t size);
 
 
 /**
@@ -202,21 +132,21 @@ void 		glslAttachFragmentShader(GLSLprogram obj, const char* filename);
  *
  * @param obj Shader program created before.
  **/
-void 		glslLinkProgram(GLSLprogram obj);
+GLSLAPI void GLSLAPIENTRY	glslLinkProgram(GLSLprogram obj);
 
 
 /**
  * Delete the program and release used memory.
  * @param obj Shader program created before
  **/
-void 		glslDeleteProgram(GLSLprogram obj);
+GLSLAPI void GLSLAPIENTRY	glslDeleteProgram(GLSLprogram obj);
 
 
 /**
  * Enable and bind the program for using in the next rendering steps.
  * @param obj SHader program created before.
  **/
-void glslEnableProgram(GLSLprogram obj);
+GLSLAPI void GLSLAPIENTRY	glslEnableProgram(GLSLprogram obj);
 
 
 /**
@@ -224,13 +154,13 @@ void glslEnableProgram(GLSLprogram obj);
  * the coming data.
  * @param obj Program to be deisbaled
  **/
-void glslDisableProgram(GLSLprogram obj);
+GLSLAPI void GLSLAPIENTRY	glslDisableProgram(GLSLprogram obj);
 
 
 /**
  * This function will disable all currently active shader programs
  **/
-void glslDisable();
+GLSLAPI void GLSLAPIENTRY	glslDisable();
 
 
 
@@ -243,19 +173,19 @@ void glslDisable();
  * So if your programm does not load, you can find information
  * about the error here.
  **/
-const char*	glslGetLastErrorString();
+GLSLAPI const char* GLSLAPIENTRY	glslGetLastErrorString();
 
 
 /**
  * Set the callback function which will be called if any error occurs.
  **/
-void 		glslSetErrorCallback(GLSLerrorCallback pCallback, void* callbackParam = NULL);
+GLSLAPI void GLSLAPIENTRY	glslSetErrorCallback(GLSLerrorCallback pCallback, void* callbackParam);
 
 
 /**
  * Returns 1 if there is an error. 0 otherwise
  **/
-int			glslHasError();
+GLSLAPI GLSLbool GLSLAPIENTRY	glslHasError();
 
 
 
@@ -273,7 +203,7 @@ int			glslHasError();
  * @note If the program was already linked, so it will be relinked again, because
  *			all bounded attributes has to be linked with the program
  **/
-void glslBindAttribute(GLSLprogram obj, int attrIndex, char* name);
+GLSLAPI void GLSLAPIENTRY	glslBindAttribute(GLSLprogram obj, GLSLint32 attrIndex, char* name);
 
 
 /**
@@ -282,7 +212,7 @@ void glslBindAttribute(GLSLprogram obj, int attrIndex, char* name);
  * @note If you have any parameters that are not in use, so they
  *		 will be removed by glsl compiler.
  **/
-int glslGetUniformParameterCount(GLSLprogram obj);
+GLSLAPI GLSLint32 GLSLAPIENTRY	glslGetUniformParameterCount(GLSLprogram obj);
 
 
 /**
@@ -300,13 +230,14 @@ int glslGetUniformParameterCount(GLSLprogram obj);
  * @note At now there is only support for values with the length 1,2,3,4
  *		 according to GLSL's float, vec2, vec3, vec4
  **/
-void glslSetParameterf(GLSLprogram obj, const char* name, int size, const float* value);
+GLSLAPI void GLSLAPIENTRY	glslSetParameterf(GLSLprogram obj, const char* name, GLSLint8 size, const GLSLfloat32* value);
+
 
 /**
  * Same as glslSetParameterf but only for parameters with a length of 1
  * @see glslSetParameterf
  **/
-void glslSetParameter1f(GLSLprogram obj, const char* name, const float value){
+GLSLAPI void GLSLAPIENTRY	glslSetParameter1f(GLSLprogram obj, const char* name, const GLSLfloat32 value){
 	glslSetParameterf(obj, name, 1, &value);
 }
 
@@ -315,7 +246,7 @@ void glslSetParameter1f(GLSLprogram obj, const char* name, const float value){
  * Same as glslSetParameterf but only for parameters with a length of 2
  * @see glslSetParameterf
  **/
-void glslSetParameter2f(GLSLprogram obj, const char* name, const float* value){
+GLSLAPI void GLSLAPIENTRY	glslSetParameter2f(GLSLprogram obj, const char* name, const GLSLfloat32* value){
 	glslSetParameterf(obj, name, 2, value);
 }
 
@@ -323,7 +254,7 @@ void glslSetParameter2f(GLSLprogram obj, const char* name, const float* value){
  * Same as glslSetParameterf but only for parameters with a length of 3
  * @see glslSetParameterf
  **/
-void glslSetParameter3f(GLSLprogram obj, const char* name, const float* value){
+GLSLAPI void GLSLAPIENTRY	glslSetParameter3f(GLSLprogram obj, const char* name, const GLSLfloat32* value){
 	glslSetParameterf(obj, name, 3, value);
 }
 
@@ -331,7 +262,7 @@ void glslSetParameter3f(GLSLprogram obj, const char* name, const float* value){
  * Same as glslSetParameterf but only for parameters with a length of 4
  * @see glslSetParameterf
  **/
-void glslSetParameter4f(GLSLprogram obj, const char* name, const float* value){
+GLSLAPI void GLSLAPIENTRY	glslSetParameter4f(GLSLprogram obj, const char* name, const GLSLfloat32* value){
 	glslSetParameterf(obj, name, 4, value);
 }
 
@@ -343,14 +274,14 @@ void glslSetParameter4f(GLSLprogram obj, const char* name, const float* value){
  * @note At now there is only support for values with the length 1,2,3,4
  *		 according to GLSL's int, ivec2, ivec3, ivec4
  **/
-void glslSetParameteri(GLSLprogram obj, const char* name, int size, const int* value);
+GLSLAPI void GLSLAPIENTRY	glslSetParameteri(GLSLprogram obj, const char* name, GLSLint8 size, const GLSLint32* value);
 
 
 /**
  * Same as glslSetParameteri but only for parameters with a length of 1
  * @see glslSetParameteri
  **/
-void glslSetParameter1i(GLSLprogram obj, const char* name, const int value){
+GLSLAPI void GLSLAPIENTRY	glslSetParameter1i(GLSLprogram obj, const char* name, const GLSLint32 value){
 	glslSetParameteri(obj, name, 1, &value);
 }
 
@@ -359,7 +290,7 @@ void glslSetParameter1i(GLSLprogram obj, const char* name, const int value){
  * Same as glslSetParameteri but only for parameters with a length of 2
  * @see glslSetParameteri
  **/
-void glslSetParameter2i(GLSLprogram obj, const char* name, const int* value){
+GLSLAPI void GLSLAPIENTRY	glslSetParameter2i(GLSLprogram obj, const char* name, const GLSLint32* value){
 	glslSetParameteri(obj, name, 2, value);
 }
 
@@ -367,7 +298,7 @@ void glslSetParameter2i(GLSLprogram obj, const char* name, const int* value){
  * Same as glslSetParameteri but only for parameters with a length of 3
  * @see glslSetParameteri
  **/
-void glslSetParameter3i(GLSLprogram obj, const char* name, const int* value){
+GLSLAPI void GLSLAPIENTRY	glslSetParameter3i(GLSLprogram obj, const char* name, const GLSLint32* value){
 	glslSetParameteri(obj, name, 3, value);
 }
 
@@ -375,7 +306,7 @@ void glslSetParameter3i(GLSLprogram obj, const char* name, const int* value){
  * Same as glslSetParameteri but only for parameters with a length of 4
  * @see glslSetParameteri
  **/
-void glslSetParameter4i(GLSLprogram obj, const char* name, const int* value){
+GLSLAPI void GLSLAPIENTRY	glslSetParameter4i(GLSLprogram obj, const char* name, const GLSLint32* value){
 	glslSetParameteri(obj, name, 4, value);
 }
 
@@ -388,19 +319,20 @@ void glslSetParameter4i(GLSLprogram obj, const char* name, const int* value){
  * @param name Parameter name
  * @param size Size of the parameter (mat4 => size=16)
  * @param value Pointer containing the matrix
- * @param trans If true the matrix will be transformed through OpenGL
+ * @param trans If 0 the matrix will be not transposed through OpenGL, otherwise yes
  *
  * @note At now there is only support for values with the length 4,9,16
  *		 according to GLSL's mat2, mat3, mat4
  **/
-void glslSetMatrixParameter(GLSLprogram obj, const char* name, int size, const float* mat, bool trans = false);
+GLSLAPI void GLSLAPIENTRY	glslSetMatrixParameter(GLSLprogram obj, const char* name, GLSLint8 size, const GLSLfloat32* mat, GLSLbool trans);
+
 
 
 /** 
  * Same as glslSetMatrixParameter but used for fixed length of the matrix
  * @see glslSetMatrixParameter()
  **/
-void glslSetMatrixParameter4(GLSLprogram obj, const char* name, const float* mat, bool trans = false){
+GLSLAPI void GLSLAPIENTRY	glslSetMatrixParameter4(GLSLprogram obj, const char* name, const GLSLfloat32* mat, GLSLbool trans){
 	glslSetMatrixParameter(obj, name, 4, mat, trans);
 }
 
@@ -408,7 +340,7 @@ void glslSetMatrixParameter4(GLSLprogram obj, const char* name, const float* mat
  * Same as glslSetMatrixParameter but used for fixed length of the matrix
  * @see glslSetMatrixParameter()
  **/
-void glslSetMatrixParameter9(GLSLprogram obj, const char* name, const float* mat, bool trans = false){
+GLSLAPI void GLSLAPIENTRY	glslSetMatrixParameter9(GLSLprogram obj, const char* name, const GLSLfloat32* mat, GLSLbool trans){
 	glslSetMatrixParameter(obj, name, 9, mat, trans);
 }
 
@@ -417,7 +349,7 @@ void glslSetMatrixParameter9(GLSLprogram obj, const char* name, const float* mat
  * Same as glslSetMatrixParameter but used for fixed length of the matrix
  * @see glslSetMatrixParameter()
  **/
-void glslSetMatrixParameter16(GLSLprogram obj, const char* name, const float* mat, bool trans = false){
+GLSLAPI void GLSLAPIENTRY	glslSetMatrixParameter16(GLSLprogram obj, const char* name, const GLSLfloat32* mat, GLSLbool trans){
 	glslSetMatrixParameter(obj, name, 16, mat, trans);
 }
 
@@ -431,9 +363,12 @@ void glslSetMatrixParameter16(GLSLprogram obj, const char* name, const float* ma
  *
  * @note Don't forget to call glBindTexture() before you use it :-) 
  **/
-void glslSetTexture(GLSLprogram obj, const char* name, GLuint texture_unit);
+GLSLAPI void GLSLAPIENTRY	glslSetTexture(GLSLprogram obj, const char* name, GLSLuint32 texture_unit);
 
 
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif
 

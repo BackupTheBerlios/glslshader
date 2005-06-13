@@ -120,10 +120,8 @@ typedef struct _GLSL_Param
 	char name[GLSL_LONGEST_NAME];
 } GLSL_Param;
 
-/**
- * This represents one shader object. Each shader object is either fragment
- * or vertex program.
- **/
+
+//! This represents one shader object. Each shader object is either fragment or vertex program.
 typedef struct _GLSL_Shader
 {
 

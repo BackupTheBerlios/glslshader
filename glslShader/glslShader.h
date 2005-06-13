@@ -318,7 +318,7 @@ GLSLAPI void GLSLAPIENTRY	glslSetParameter4i(GLSLprogram obj, const char* name, 
  * @param obj Shader program created before
  * @param name Parameter name
  * @param size Size of the parameter (mat4 => size=16)
- * @param value Pointer containing the matrix
+ * @param mat Pointer containing the matrix
  * @param trans If 0 the matrix will be not transposed through OpenGL, otherwise yes
  *
  * @note At now there is only support for values with the length 4,9,16

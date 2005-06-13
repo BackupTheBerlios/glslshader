@@ -1,3 +1,4 @@
+SUBDIRS = doc
 
 lib_LTLIBRARIES = libglslShader.la
 

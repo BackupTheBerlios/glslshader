@@ -20782,7 +20782,7 @@ CFLAGS="$CFLAGS $GL_CFLAGS"
 LIBS="$LIBS $GL_LIBS"
 
 
-                    ac_config_files="$ac_config_files Makefile glslShader.pc"
+                              ac_config_files="$ac_config_files Makefile doc/Makefile glslShader.pc"
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -21347,6 +21347,7 @@ do
   case "$ac_config_target" in
   # Handling of arguments.
   "Makefile" ) CONFIG_FILES="$CONFIG_FILES Makefile" ;;
+  "doc/Makefile" ) CONFIG_FILES="$CONFIG_FILES doc/Makefile" ;;
   "glslShader.pc" ) CONFIG_FILES="$CONFIG_FILES glslShader.pc" ;;
   "depfiles" ) CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
   "config.h" ) CONFIG_HEADERS="$CONFIG_HEADERS config.h" ;;

@@ -201,7 +201,7 @@ void glslAttachShaderFromMemory(GLSLprogram obj, const char* prog, size_t size, 
 	if (obj == 0) return;
 	
 	// check for right shader type
-	if (shaderType != GL_VERTEX_SHADER_ARB && shaderType != GL_FRAGMENT_SHADER_ARB){
+	if (shaderType != GLSL_VERTEX && shaderType != GLSL_FRAGMENT){
 		glslFillLastError(GLSL_ERR_WRONG_SHADER_TYPE);
 		glslCheckError(obj, 1);
 		return;		
@@ -221,8 +221,10 @@ void glslAttachShaderFromMemory(GLSLprogram obj, const char* prog, size_t size, 
 #endif
 	
 	// compile the source
+	GLenum shType = shaderType == GLSL_VERTEX ? GL_VERTEX_SHADER_ARB : GL_FRAGMENT_SHADER_ARB;
+	
 	GLint length = size;
-	GLhandleARB shader = glCreateShaderObjectARB(shaderType);
+	GLhandleARB shader = glCreateShaderObjectARB(shType);
 	glShaderSourceARB(shader, 1, (const GLcharARB**)&prog, &size);
 	glCompileShaderARB(shader);
 	glAttachObjectARB(obj->program, shader);
@@ -250,7 +252,7 @@ void glslAttachShader(GLSLprogram obj, const char* filename, GLSL_ShaderType sha
 	FILE* 	file = 0;
 
 	// check for right shader type
-	if (shaderType != GL_VERTEX_SHADER_ARB && shaderType != GL_FRAGMENT_SHADER_ARB){
+	if (shaderType != GLSL_VERTEX && shaderType != GLSL_FRAGMENT){
 		glslFillLastError(GLSL_ERR_WRONG_SHADER_TYPE);
 		glslCheckError(obj, 1);
 		return;		

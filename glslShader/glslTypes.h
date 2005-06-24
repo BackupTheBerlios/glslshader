@@ -17,16 +17,20 @@
 extern "C" {
 #endif /* __cplusplus */
 
-//------------------------------------------------------------------------------
-//	Standard library includings and definitions
-//------------------------------------------------------------------------------
+/*------------------------------------------------------------------------------
+	Standard library includings and definitions
+------------------------------------------------------------------------------*/
 #include "glslPlatform.h"
+
+#define GL_GLEXT_PROTOTYPES
+#define GL_GLEXT_LEGACY
+
 #include <GL/gl.h>
+#include "glext.h"
 
-
-//------------------------------------------------------------------------------
-//	Basic Type Definitions
-//------------------------------------------------------------------------------
+/*------------------------------------------------------------------------------
+	Basic Type Definitions
+------------------------------------------------------------------------------*/
 typedef unsigned char 	GLSLbyte;
 
 typedef char			GLSLint8;
@@ -52,9 +56,9 @@ typedef GLSLbyte		GLSLbool;
 #endif
 
 
-//------------------------------------------------------------------------------
-//	Basic program definitions and constants
-//------------------------------------------------------------------------------
+/*------------------------------------------------------------------------------
+	Basic program definitions and constants
+------------------------------------------------------------------------------*/
 
 //! Size of the longest parameter name that can appears
 #define GLSL_LONGEST_NAME 		256
@@ -103,7 +107,6 @@ typedef struct _GLSL_Attr
 	char name[GLSL_LONGEST_NAME];
 } GLSL_Attr;
 
-
 //! This structure stores information about parameters in glsl-Program
 typedef struct _GLSL_Param 
 {
@@ -120,11 +123,9 @@ typedef struct _GLSL_Param
 	char name[GLSL_LONGEST_NAME];
 } GLSL_Param;
 
-
 //! This represents one shader object. Each shader object is either fragment or vertex program.
 typedef struct _GLSL_Shader
 {
-
 	//! OpenGL's program handler
 	GLhandleARB program;
 

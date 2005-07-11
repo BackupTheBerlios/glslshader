@@ -67,10 +67,10 @@ typedef GLSLbyte		GLSLbool;
 #define GLSL_STACK_SIZE 		64
 
 //! True value for bool type
-#define GLSL_TRUE				0x0
+#define GLSL_TRUE				0x1
 
 //! False value for bool type
-#define GLSL_FALSE				0x1
+#define GLSL_FALSE				0x0
 
 
 //! Enumeration for the supported shader types

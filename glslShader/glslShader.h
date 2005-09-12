@@ -237,35 +237,28 @@ GLSLAPI void GLSLAPIENTRY	glslSetParameterf(GLSLprogram obj, const char* name, G
  * Same as glslSetParameterf but only for parameters with a length of 1
  * @see glslSetParameterf
  **/
-GLSLAPI void GLSLAPIENTRY	glslSetParameter1f(GLSLprogram obj, const char* name, const GLSLfloat32 value){
-	glslSetParameterf(obj, name, 1, &value);
-}
+GLSLAPI void GLSLAPIENTRY	glslSetParameter1f(GLSLprogram obj, const char* name, const GLSLfloat32 value);
 
 
 /**
  * Same as glslSetParameterf but only for parameters with a length of 2
  * @see glslSetParameterf
  **/
-GLSLAPI void GLSLAPIENTRY	glslSetParameter2f(GLSLprogram obj, const char* name, const GLSLfloat32* value){
-	glslSetParameterf(obj, name, 2, value);
-}
+GLSLAPI void GLSLAPIENTRY	glslSetParameter2f(GLSLprogram obj, const char* name, const GLSLfloat32* value);
+
 
 /**
  * Same as glslSetParameterf but only for parameters with a length of 3
  * @see glslSetParameterf
  **/
-GLSLAPI void GLSLAPIENTRY	glslSetParameter3f(GLSLprogram obj, const char* name, const GLSLfloat32* value){
-	glslSetParameterf(obj, name, 3, value);
-}
+GLSLAPI void GLSLAPIENTRY	glslSetParameter3f(GLSLprogram obj, const char* name, const GLSLfloat32* value);
+
 
 /**
  * Same as glslSetParameterf but only for parameters with a length of 4
  * @see glslSetParameterf
  **/
-GLSLAPI void GLSLAPIENTRY	glslSetParameter4f(GLSLprogram obj, const char* name, const GLSLfloat32* value){
-	glslSetParameterf(obj, name, 4, value);
-}
-
+GLSLAPI void GLSLAPIENTRY	glslSetParameter4f(GLSLprogram obj, const char* name, const GLSLfloat32* value);
 
 /**
  * Integer version.
@@ -281,34 +274,28 @@ GLSLAPI void GLSLAPIENTRY	glslSetParameteri(GLSLprogram obj, const char* name, G
  * Same as glslSetParameteri but only for parameters with a length of 1
  * @see glslSetParameteri
  **/
-GLSLAPI void GLSLAPIENTRY	glslSetParameter1i(GLSLprogram obj, const char* name, const GLSLint32 value){
-	glslSetParameteri(obj, name, 1, &value);
-}
+GLSLAPI void GLSLAPIENTRY	glslSetParameter1i(GLSLprogram obj, const char* name, const GLSLint32 value);
 
 
 /**
  * Same as glslSetParameteri but only for parameters with a length of 2
  * @see glslSetParameteri
  **/
-GLSLAPI void GLSLAPIENTRY	glslSetParameter2i(GLSLprogram obj, const char* name, const GLSLint32* value){
-	glslSetParameteri(obj, name, 2, value);
-}
+GLSLAPI void GLSLAPIENTRY	glslSetParameter2i(GLSLprogram obj, const char* name, const GLSLint32* value);
+
 
 /**
  * Same as glslSetParameteri but only for parameters with a length of 3
  * @see glslSetParameteri
  **/
-GLSLAPI void GLSLAPIENTRY	glslSetParameter3i(GLSLprogram obj, const char* name, const GLSLint32* value){
-	glslSetParameteri(obj, name, 3, value);
-}
+GLSLAPI void GLSLAPIENTRY	glslSetParameter3i(GLSLprogram obj, const char* name, const GLSLint32* value);
+
 
 /**
  * Same as glslSetParameteri but only for parameters with a length of 4
  * @see glslSetParameteri
  **/
-GLSLAPI void GLSLAPIENTRY	glslSetParameter4i(GLSLprogram obj, const char* name, const GLSLint32* value){
-	glslSetParameteri(obj, name, 4, value);
-}
+GLSLAPI void GLSLAPIENTRY	glslSetParameter4i(GLSLprogram obj, const char* name, const GLSLint32* value);
 
 
 
@@ -332,26 +319,20 @@ GLSLAPI void GLSLAPIENTRY	glslSetMatrixParameter(GLSLprogram obj, const char* na
  * Same as glslSetMatrixParameter but used for fixed length of the matrix
  * @see glslSetMatrixParameter()
  **/
-GLSLAPI void GLSLAPIENTRY	glslSetMatrixParameter4(GLSLprogram obj, const char* name, const GLSLfloat32* mat, GLSLbool trans){
-	glslSetMatrixParameter(obj, name, 4, mat, trans);
-}
+GLSLAPI void GLSLAPIENTRY	glslSetMatrixParameter4(GLSLprogram obj, const char* name, const GLSLfloat32* mat, GLSLbool trans);
 
 /** 
  * Same as glslSetMatrixParameter but used for fixed length of the matrix
  * @see glslSetMatrixParameter()
  **/
-GLSLAPI void GLSLAPIENTRY	glslSetMatrixParameter9(GLSLprogram obj, const char* name, const GLSLfloat32* mat, GLSLbool trans){
-	glslSetMatrixParameter(obj, name, 9, mat, trans);
-}
+GLSLAPI void GLSLAPIENTRY	glslSetMatrixParameter9(GLSLprogram obj, const char* name, const GLSLfloat32* mat, GLSLbool trans);
 
 
 /** 
  * Same as glslSetMatrixParameter but used for fixed length of the matrix
  * @see glslSetMatrixParameter()
  **/
-GLSLAPI void GLSLAPIENTRY	glslSetMatrixParameter16(GLSLprogram obj, const char* name, const GLSLfloat32* mat, GLSLbool trans){
-	glslSetMatrixParameter(obj, name, 16, mat, trans);
-}
+GLSLAPI void GLSLAPIENTRY	glslSetMatrixParameter16(GLSLprogram obj, const char* name, const GLSLfloat32* mat, GLSLbool trans);
 
 
 /**

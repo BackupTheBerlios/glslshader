@@ -85,17 +85,15 @@ typedef enum _GLSL_ShaderType
 } GLSL_ShaderType;
 
 
-
-const char* GLSL_ERR_NOT_VALID_PROGRAM 	= "Not a valid program object!\n";
-const char* GLSL_ERR_NO_PARAMETERS 		= "The program has no parameters or they are not in use!\n";
-const char* GLSL_ERR_CAN_NOT_CREATE		= "Cannot create program object !!!\n Check if OpenGL subsystem is online.\n";
-const char* GLSL_ERR_WRONG_SHADER_TYPE	= "Wrong shader type !\n";
-const char* GLSL_ERR_CANNOT_OPEN_FILE	= "Can not open the shader file \"%s\" \n";
-const char* GLSL_ERR_NOT_LINKED			= "Program object was not linked before!\n";
-const char* GLSL_ERR_NO_PARAMETER		= "The parameter %s not exists or is not used\n";
-const char* GLSL_ERR_OUT_OF_MEMORY		= "Out of Memory Error !!!\n";
-const char* GLSL_ERR_ONLY_BEFORE_LINK	= "This can be used only before program was linked!\n";
-
+GLSLAPI const char* GLSL_ERR_NOT_VALID_PROGRAM;;
+GLSLAPI const char* GLSL_ERR_NO_PARAMETERS;
+GLSLAPI const char* GLSL_ERR_CAN_NOT_CREATE;
+GLSLAPI const char* GLSL_ERR_WRONG_SHADER_TYPE;
+GLSLAPI const char* GLSL_ERR_CANNOT_OPEN_FILE;
+GLSLAPI const char* GLSL_ERR_NOT_LINKED;
+GLSLAPI const char* GLSL_ERR_NO_PARAMETER;
+GLSLAPI const char* GLSL_ERR_OUT_OF_MEMORY;
+GLSLAPI const char* GLSL_ERR_ONLY_BEFORE_LINK;
 
 //! Here we store information about attributes used in programs
 typedef struct _GLSL_Attr

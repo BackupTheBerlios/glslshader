@@ -31,6 +31,17 @@
 #include <string.h>
 
 
+/* Constants defined for using */
+const char* GLSL_ERR_NOT_VALID_PROGRAM 	= "Not a valid program object!\n";
+const char* GLSL_ERR_NO_PARAMETERS 		= "The program has no parameters or they are not in use!\n";
+const char* GLSL_ERR_CAN_NOT_CREATE		= "Cannot create program object !!!\n Check if OpenGL subsystem is online.\n";
+const char* GLSL_ERR_WRONG_SHADER_TYPE	= "Wrong shader type !\n";
+const char* GLSL_ERR_CANNOT_OPEN_FILE	= "Can not open the shader file \"%s\" \n";
+const char* GLSL_ERR_NOT_LINKED			= "Program object was not linked before!\n";
+const char* GLSL_ERR_NO_PARAMETER		= "The parameter %s not exists or is not used\n";
+const char* GLSL_ERR_OUT_OF_MEMORY		= "Out of Memory Error !!!\n";
+const char* GLSL_ERR_ONLY_BEFORE_LINK	= "This can be used only before program was linked!\n";
+
 #if 0
 #include <GL/glut.h>
 
@@ -220,9 +231,9 @@ void glslAttachShaderFromMemory(GLSLprogram obj, const char* prog, size_t size, 
 	/* compile the source */
 	GLenum shType = shaderType == GLSL_VERTEX ? GL_VERTEX_SHADER_ARB : GL_FRAGMENT_SHADER_ARB;
 	
-	GLint length = size;
+	//GLint length = size;
 	GLhandleARB shader = glCreateShaderObjectARB(shType);
-	glShaderSourceARB(shader, 1, (const GLcharARB**)&prog, &size);
+	glShaderSourceARB(shader, 1, (const GLcharARB**)&prog, (const GLint*)&size);
 	glCompileShaderARB(shader);
 	glAttachObjectARB(obj->program, shader);
 	glDeleteObjectARB(shader);
@@ -597,7 +608,7 @@ void glslCheckError(GLSLprogram obj, GLSLbool internal){
 	if (internal == 0){
 		size_t length = 0;
 		static char error[4096];
-		glGetInfoLogARB(obj->program, 4096, &length, error);
+		glGetInfoLogARB(obj->program, 4096, (GLsizei*)&length, error);
 
 		glslEmptyLastError();
 
@@ -658,6 +669,26 @@ void glslSetParameterf(GLSLprogram obj, const char* name, GLSLint8 size, const G
 	
 }
 
+/*--------------------------------------------------------------------------------*/
+void glslSetParameter1f(GLSLprogram obj, const char* name, const GLSLfloat32 value){
+	glslSetParameterf(obj, name, 1, &value);
+}
+
+
+/*--------------------------------------------------------------------------------*/
+void glslSetParameter2f(GLSLprogram obj, const char* name, const GLSLfloat32* value){
+	glslSetParameterf(obj, name, 2, value);
+}
+
+/*--------------------------------------------------------------------------------*/
+void glslSetParameter3f(GLSLprogram obj, const char* name, const GLSLfloat32* value){
+	glslSetParameterf(obj, name, 3, value);
+}
+
+/*--------------------------------------------------------------------------------*/
+void glslSetParameter4f(GLSLprogram obj, const char* name, const GLSLfloat32* value){
+	glslSetParameterf(obj, name, 4, value);
+}
 
 /*--------------------------------------------------------------------------------*/
 void glslSetParameteri(GLSLprogram obj, const char* name, GLSLint8 size, const GLSLint32* value){
@@ -684,6 +715,26 @@ void glslSetParameteri(GLSLprogram obj, const char* name, GLSLint8 size, const G
 	}
 }
 
+/*--------------------------------------------------------------------------------*/
+void glslSetParameter1i(GLSLprogram obj, const char* name, const GLSLint32 value){
+	glslSetParameteri(obj, name, 1, &value);
+}
+
+
+/*--------------------------------------------------------------------------------*/
+void glslSetParameter2i(GLSLprogram obj, const char* name, const GLSLint32* value){
+	glslSetParameteri(obj, name, 2, value);
+}
+
+/*--------------------------------------------------------------------------------*/
+void glslSetParameter3i(GLSLprogram obj, const char* name, const GLSLint32* value){
+	glslSetParameteri(obj, name, 3, value);
+}
+
+/*--------------------------------------------------------------------------------*/
+void glslSetParameter4i(GLSLprogram obj, const char* name, const GLSLint32* value){
+	glslSetParameteri(obj, name, 4, value);
+}
 
 
 /*--------------------------------------------------------------------------------*/
@@ -711,6 +762,22 @@ void glslSetMatrixParameter(GLSLprogram obj, const char* name, GLSLint8 size, co
 
 }
 
+
+/*--------------------------------------------------------------------------------*/
+void glslSetMatrixParameter4(GLSLprogram obj, const char* name, const GLSLfloat32* mat, GLSLbool trans){
+	glslSetMatrixParameter(obj, name, 4, mat, trans);
+}
+
+/*--------------------------------------------------------------------------------*/
+void glslSetMatrixParameter9(GLSLprogram obj, const char* name, const GLSLfloat32* mat, GLSLbool trans){
+	glslSetMatrixParameter(obj, name, 9, mat, trans);
+}
+
+
+/*--------------------------------------------------------------------------------*/
+void glslSetMatrixParameter16(GLSLprogram obj, const char* name, const GLSLfloat32* mat, GLSLbool trans){
+	glslSetMatrixParameter(obj, name, 16, mat, trans);
+}
 
 
 /*--------------------------------------------------------------------------------*/
